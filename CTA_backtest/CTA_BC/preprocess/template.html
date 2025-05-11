@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTA策略绩效分析</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        .container {
+            width: 98%;
+            max-width: 1800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #444;
+        }
+        .chart-container {
+            width: 100%;
+            height: 900px;
+            margin-bottom: 30px;
+        }
+        .control-panel {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 12px;
+            background-color: #333;
+            border-radius: 4px;
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            padding: 10px 18px;
+            background-color: #2a6496;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #1a4c80;
+        }
+        .info-box {
+            margin-top: 25px;
+            padding: 18px;
+            background-color: rgba(50, 50, 50, 0.7);
+            border-radius: 4px;
+            border-left: 4px solid #2a6496;
+        }
+        /* 自定义Plotly工具栏样式 */
+        .modebar {
+            background-color: rgba(30, 30, 30, 0.7) !important;
+        }
+        .modebar-btn path {
+            fill: #e0e0e0 !important;
+        }
+        /* 确保子图之间有足够的空间 */
+        .subplot {
+            margin-bottom: 20px;
+        }
+        /* 确保图例和坐标轴标签不会被截断 */
+        .js-plotly-plot .plotly .main-svg {
+            overflow: visible !important;
+        }
+    </style>
+    <!-- 引入Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="title">CTA策略绩效分析</h1>
+        </div>
+        
+        <div class="control-panel">
+            <div class="button-group">
+                <button id="reset-zoom">重置视图</button>
+                <button id="toggle-legend">显示/隐藏图例</button>
+            </div>
+            <div class="button-group">
+                <button id="download-png">下载PNG</button>
+                <button id="download-svg">下载SVG</button>
+            </div>
+        </div>
+        
+        <div id="plotly-chart" class="chart-container"></div>
+        
+        <div class="info-box">
+            <h3>使用说明</h3>
+            <p>• 双击图表区域: 重置为全图视图</p>
+            <p>• 框选区域: 缩放至选定区域</p>
+            <p>• 鼠标滚轮: 缩放视图</p>
+            <p>• 单击图例项: 显示/隐藏数据系列</p>
+            <p>• 双击图例项: 仅显示该数据系列</p>
+        </div>
+    </div>
+
+    <script>
+        // 这部分脚本将由Plotly自动填充
+        // PLOT_DATA将在生成HTML时被替换为实际的图表数据
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // 重置缩放按钮
+            document.getElementById('reset-zoom').addEventListener('click', function() {
+                Plotly.relayout('plotly-chart', {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true,
+                    'xaxis2.autorange': true,
+                    'yaxis2.autorange': true
+                });
+            });
+            
+            // 显示/隐藏图例
+            document.getElementById('toggle-legend').addEventListener('click', function() {
+                var update = {
+                    'showlegend': !document.getElementById('plotly-chart').layout.showlegend
+                };
+                Plotly.relayout('plotly-chart', update);
+            });
+            
+            // 下载PNG
+            document.getElementById('download-png').addEventListener('click', function() {
+                Plotly.downloadImage('plotly-chart', {
+                    format: 'png',
+                    width: 1800,
+                    height: 1000,
+                    filename: 'cta_strategy_plot'
+                });
+            });
+            
+            // 下载SVG
+            document.getElementById('download-svg').addEventListener('click', function() {
+                Plotly.downloadImage('plotly-chart', {
+                    format: 'svg',
+                    width: 1800,
+                    height: 1000,
+                    filename: 'cta_strategy_plot'
+                });
+            });
+            
+            // 更新标题
+            if (typeof plotTitle !== 'undefined') {
+                document.getElementById('title').textContent = plotTitle;
+            }
+            
+            // 自动调整图表大小以适应容器
+            window.addEventListener('resize', function() {
+                Plotly.Plots.resize('plotly-chart');
+            });
+        });
+    </script>
+</body>
+</html> 
