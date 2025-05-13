@@ -7,7 +7,6 @@ plt.rcParams['axes.unicode_minus'] = False    # 解决保存图像是负号'-'�
 import seaborn as sns
 import warnings
 from tqdm import tqdm
-from .CTA_BC.preprocess._plot import _plot_pnl            # 导入绘图函数
 from .CTA_BC.preprocess._plot_pro import generate_report_for_product    # 导入单个产品报告生成函数
 from .CTA_BC.trade.trade_boll import trade_ori,create_trade_flag  # 导入交易信号生成函数
 from .CTA_BC.metrics.cal_return import calculate_returns_all,calculate_returns_folds  # 导入收益率计算函数
@@ -40,7 +39,7 @@ class BackTest:
         df_amt (DataFrame): 成交量数据，仅在需要考虑成交量的模式下使用
         amt_threshold (float): 成交量阈值，仅在需要考虑成交量的模式下使用
         """
-        self.df_x_input = df_x.copy() 
+        self.df_x_input = df_x
         if df_amt is not None:
             self.df_amt_input = df_amt.copy()
         else:
@@ -54,18 +53,8 @@ class BackTest:
         self.end_date = end_date  
         
         # 生成交易信号，create_trade_flag 应返回列名为 PRODUCT_flag 的 DataFrame
-        self.flag = create_trade_flag(
-            df=_df_x_sorted, 
-            product_list=self.product_list, # 传递干净的产品名列表
-            begin_date=self.begin_date, 
-            end_date=self.end_date, 
-            mode=mode, 
-            ratio=ratio, 
-            df_amt=self.df_amt_input, 
-            amt_threshold=amt_threshold
-        )
-        print('flag is here')
-        print(self.flag)
+        self.flag = self.df_x_input.copy()
+        self.flag.columns=[item + "_flag" for item in self.flag.columns]
         
         self._fitted = True  
 
@@ -90,8 +79,9 @@ class BackTest:
         # 从 self.product_list (干净的产品名列表) 中筛选出在 filtered_flag 中实际存在的信号
         products_to_calculate = []
         for p_clean in self.product_list:
-            if f"{p_clean}_flag" in filtered_flag.columns:
-                products_to_calculate.append(p_clean)
+            print(p_clean)
+            if f"{p_clean}" in filtered_flag.columns:
+                products_to_calculate.append(f"{p_clean}")
         
         if not products_to_calculate:
             warnings.warn(f"Strategy '{self.name}': No common products with signals found for the given date range. Report generation skipped.")

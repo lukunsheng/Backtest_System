@@ -35,9 +35,17 @@ def cal_metric(df_all,df_long,df_short):
     short_win_rate = (df_short > 0).sum().sum() / (pd.notnull(df_short)).sum().sum()
 
     # 计算盈亏比 (盈利交易总和/亏损交易总和的绝对值)
-    all_ProfitLoss_ratio = df_all[df_all > 0].sum().sum() / abs(df_all[df_all < 0]).sum().sum()
-    long_ProfitLoss_ratio = df_long[df_long > 0].sum().sum() / abs(df_long[df_long < 0]).sum().sum()
-    short_ProfitLoss_ratio = df_short[df_short > 0].sum().sum() / abs(df_short[df_short < 0]).sum().sum()
+    all_profit = df_all[df_all > 0].sum().sum()
+    all_loss = abs(df_all[df_all < 0]).sum().sum()
+    all_ProfitLoss_ratio = all_profit / all_loss if all_loss > 0 else float('inf')
+    
+    long_profit = df_long[df_long > 0].sum().sum()
+    long_loss = abs(df_long[df_long < 0]).sum().sum() 
+    long_ProfitLoss_ratio = long_profit / long_loss if long_loss > 0 else float('inf')
+    
+    short_profit = df_short[df_short > 0].sum().sum()
+    short_loss = abs(df_short[df_short < 0]).sum().sum()
+    short_ProfitLoss_ratio = short_profit / short_loss if short_loss > 0 else float('inf')
 
     # 计算交易次数
     count_all = (pd.notnull(df_all)).sum().sum()
@@ -45,15 +53,15 @@ def cal_metric(df_all,df_long,df_short):
     count_short = (pd.notnull(df_short)).sum().sum()
 
     # 计算平均收益率
-    MeanRet_all = df_all.sum().sum() / count_all
-    MeanRet_long = df_long.sum().sum() / count_long
-    MeanRet_short = df_short.sum().sum() / count_short
+    MeanRet_all = df_all.sum().sum() / count_all if count_all > 0 else 0
+    MeanRet_long = df_long.sum().sum() / count_long if count_long > 0 else 0
+    MeanRet_short = df_short.sum().sum() / count_short if count_short > 0 else 0
     
     # 计算交易天数和日均交易次数
     day_len = len(pd.Series(df_all.index).apply(lambda x: str(x)[:10]).unique())
-    count_all_D = count_all/day_len
-    count_long_D = count_long/day_len
-    count_short_D = count_short/day_len
+    count_all_D = count_all/day_len if day_len > 0 else 0
+    count_long_D = count_long/day_len if day_len > 0 else 0
+    count_short_D = count_short/day_len if day_len > 0 else 0
 
     # 计算总利润
     all_profit = df_pnl['return_all'][-1]

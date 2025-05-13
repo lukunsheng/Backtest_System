@@ -6,3 +6,5 @@ CTA_BC - CTA回测核心模块
 - preprocess: 数据预处理和可视化工具
 - trade: 交易信号生成逻辑
 """
+
+# This file makes CTA_BC a sub-package

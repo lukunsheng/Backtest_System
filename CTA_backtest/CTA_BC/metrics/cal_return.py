@@ -68,20 +68,47 @@ def calculate_returns_all(df_x,df_y,product_list,cost = 0):
     # 遍历每个品种计算收益
     for product in tqdm(product_list):
         # 获取价格数据
+        if product not in df_y.columns:
+            warnings.warn(f"产品 {product} 在价格数据中不存在，跳过")
+            continue
+            
         base_price = df_y.loc[:,[product]]
-        # 获取信号数据
-        factor_flag = df_x.loc[:,[product]].dropna()
-
-        # if len(factor_flag.dropna()) <= 100: #过滤僵尸品种
-        #     continue
+        
+        # 获取信号数据 - 修复：兼容直接使用产品名或带_flag后缀
+        flag_column = f"{product}_flag"
+        if flag_column in df_x.columns:
+            factor_flag = df_x.loc[:,[flag_column]].dropna()
+        elif product in df_x.columns:
+            factor_flag = df_x.loc[:,[product]].dropna()
+        else:
+            warnings.warn(f"产品 {product} 的信号数据不存在 (检查了 '{product}' 和 '{flag_column}')，跳过")
+            continue
         
         # 过滤日期
         base_price = base_price[base_price.index >= '2018-01-01']
         base_price.columns = ['price']
         factor_flag.columns = ['position']
         
+        # 确保索引名称一致，以便合并
+        if base_price.index.name != factor_flag.index.name:
+            # 如果索引名称不同，让我们确保至少一个为'datetime'
+            if base_price.index.name != 'datetime':
+                base_price.index.name = 'datetime'
+            if factor_flag.index.name != 'datetime':
+                factor_flag.index.name = 'datetime'
+        
         # 合并价格和信号数据
-        _df = pd.merge(base_price, factor_flag, on='datetime', how='right')
+        try:
+            _df = pd.merge(base_price, factor_flag, left_index=True, right_index=True)
+            # _df = pd.merge(base_price, factor_flag, on='datetime', how='right') # 旧代码
+        except Exception as e:
+            warnings.warn(f"合并产品 {product} 的价格和信号数据时出错: {str(e)}，尝试重置索引名称")
+            # 如果合并失败，尝试重置索引名称后再次合并
+            base_price_reset = base_price.reset_index()
+            factor_flag_reset = factor_flag.reset_index()
+            _df = pd.merge(base_price_reset, factor_flag_reset, on=base_price_reset.columns[0], how='right')
+            _df = _df.set_index(base_price_reset.columns[0])
+        
         _df.sort_index(inplace = True)
 
         # 初始化收益列

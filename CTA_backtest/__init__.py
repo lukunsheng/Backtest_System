@@ -11,3 +11,5 @@ CTA_backtest - 量化交易回测框架
 - 直观的结果可视化
 - 周期收益分析
 """
+
+# This file makes CTA_backtest a package
